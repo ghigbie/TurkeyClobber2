@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">TurkeyClobber2</string>
+    <string name="app_name">Turkey Clobber</string>
+    <string name="score">Score</string>
+    <string name="high_score">High Score</string>
+    <string name="reload">TAP HERE TO RELOAD</string>
+    <string name="click_play">Click to Play</string>
+    <string name="miss">Miss!</string>
+    <string name="level">Level 1</string>
 </resources>
