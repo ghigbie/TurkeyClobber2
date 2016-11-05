@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity  {
     private MediaPlayer mediaPlayerTurkeyCry;
     private MediaPlayer mediaPlayerReload;
     private MediaPlayer mediaPlayerGobble;
-    private MediaPlayer mediaPlayerGunShot;
+    private MediaPlayer mediaPlayerMetalClang;
     private MediaPlayer mediaPlayerClick;
     private MediaPlayer mediaPlayerReloadWarning;
     private MediaPlayer mediaPlayerAlive;
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity  {
         mediaPlayerTurkeyCry = MediaPlayer.create(this, R.raw.turkey_cry);
         mediaPlayerReload = MediaPlayer.create(this, R.raw.reload_again);
         mediaPlayerGobble = MediaPlayer.create(this, R.raw.turkey_gobble);
-        mediaPlayerGunShot = MediaPlayer.create(this, R.raw.shotgun_sound);
+        mediaPlayerMetalClang = MediaPlayer.create(this, R.raw.alive2);
         mediaPlayerClick = MediaPlayer.create(this, R.raw.click_on_sound);
         mediaPlayerReloadWarning = MediaPlayer.create(this, R.raw.reload_mp3);
         mediaPlayerAlive = MediaPlayer.create(this, R.raw.alive2);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View v) {
 
                 if(numberOfBullets > 0) {
-                    mediaPlayerGunShot.start();
+                    mediaPlayerMetalClang.start();
                 }
                 else{
                     mediaPlayerReloadWarning.start();//makes a reload warning sound
@@ -414,8 +414,8 @@ public class MainActivity extends AppCompatActivity  {
                     v.getX();
                     v.getY();
                     v.setClickable(false);
-                    v.animate().rotationX(80).setDuration(400).start();
-                    v.animate().alpha(0).setDuration(200).start();
+                    v.animate().rotationY(360).setDuration(800).start();
+                    v.animate().alpha(0).setDuration(400).start();
                     v.animate().setListener(new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity  {
 
                             v.setClickable(true);
                             v.animate().alpha(1).setStartDelay(100).start();
-                            v.animate().rotationX(0).setStartDelay(200).start();
+                            v.animate().rotationY(0).setStartDelay(200).start();
                             v.animate().setListener(new Animator.AnimatorListener() {
                                 @Override
                                 public void onAnimationStart(Animator animation) {
@@ -469,23 +469,23 @@ public class MainActivity extends AppCompatActivity  {
 
 
                     //this creates the blood splatter
-                    final ImageView turkeySplatter = new ImageView(getApplicationContext());
-                    turkeySplatter.setImageResource(R.drawable.splatter);
-                    turkeySplatter.clearAnimation();
-                    turkeySplatter.setVisibility(View.VISIBLE);
-                    turkeySplatter.setAlpha(1f);
-                    turkeySplatter.setMaxWidth(500);
-                    turkeySplatter.setMaxHeight(500);
-                    turkeySplatter.setX(v.getX()-300);
-                    turkeySplatter.setY(v.getY()+300);
-                    relativeLayout.addView(turkeySplatter);
+                    final ImageView turkeySpark = new ImageView(getApplicationContext());
+                    turkeySpark.setImageResource(R.drawable.spark);
+                    turkeySpark.clearAnimation();
+                    turkeySpark.setVisibility(View.VISIBLE);
+                    turkeySpark.setAlpha(1f);
+                    turkeySpark.setMaxWidth(500);
+                    turkeySpark.setMaxHeight(500);
+                    turkeySpark.setX(v.getX()-400);
+                    turkeySpark.setY(v.getY()-100);
+                    relativeLayout.addView(turkeySpark);
 
-                    turkeySplatter.animate()
+                    turkeySpark.animate()
                             .alpha(0f)
                             .setDuration(500)
                             .start();
 
-                    turkeySplatter.animate().setListener(new Animator.AnimatorListener() {
+                    turkeySpark.animate().setListener(new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
 
@@ -493,7 +493,7 @@ public class MainActivity extends AppCompatActivity  {
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            turkeySplatter.animate().cancel();
+                            turkeySpark.animate().cancel();
                         }
 
                         @Override
@@ -569,7 +569,7 @@ public class MainActivity extends AppCompatActivity  {
         highScore.setText("High Score " + Integer.toString(highScoreInt));
         highScore.bringToFront();
 
-        mediaPlayerGunShot.start(); //plays sound of shotgun
+        mediaPlayerMetalClang.start(); //plays sound of shotgun
 
         //plays the cry of the turkeys when they are dispatched
         mediaPlayerTurkeyCry.start();
