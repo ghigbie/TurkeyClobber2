@@ -5,7 +5,11 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -45,6 +49,14 @@ public class MainActivity extends AppCompatActivity  {
     private MediaPlayer mediaPlayerClick;
     private MediaPlayer mediaPlayerReloadWarning;
     private MediaPlayer mediaPlayerAlive;
+
+    int soundTurkeyCry;
+    int soundReload;
+    int soundMakeAmerica;
+    int soundGunShot;
+    int soundClick;
+    int soundReloadWarning;
+    int soundAlive;
 
     private int insultCount = 0;
     private int numberOfMisses = 0;
@@ -141,7 +153,7 @@ public class MainActivity extends AppCompatActivity  {
 
     //defines and sets up the media players to be used to play the sound effects
     public void defineMediaPlayers(){
-        mediaPlayerTurkeyCry = MediaPlayer.create(this, R.raw.turkey_cry);
+        mediaPlayerTurkeyCry = MediaPlayer.create(this, R.raw.metal_clang2_funny);
         mediaPlayerReload = MediaPlayer.create(this, R.raw.reload_again);
         mediaPlayerGobble = MediaPlayer.create(this, R.raw.turkey_gobble);
         mediaPlayerMetalClang = MediaPlayer.create(this, R.raw.alive2);
@@ -149,6 +161,45 @@ public class MainActivity extends AppCompatActivity  {
         mediaPlayerReloadWarning = MediaPlayer.create(this, R.raw.reload_mp3);
         mediaPlayerAlive = MediaPlayer.create(this, R.raw.alive2);
     }
+
+    public void defineSoundPool(){
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .build();
+
+            soundPool = new SoundPool.Builder()
+                    .setMaxStreams(7)
+                    .setAudioAttributes(audioAttributes)
+                    .build();
+
+            soundTurkeyCry = soundPool.load(this, R.raw.metal_clang2_funny, 1);
+            soundReload = soundPool.load(this, R.raw.reload_again, 1);
+            soundMakeAmerica = soundPool.load(this, R.raw.make_america_great_again, 1);
+            soundGunShot = soundPool.load(this, R.raw.shotgun_sound, 1);
+            soundClick = soundPool.load(this, R.raw.click_on_sound, 1);
+            soundReloadWarning = soundPool.load(this, R.raw.reload_mp3, 1);
+            soundAlive = soundPool.load(this, R.raw.alive2, 1);
+
+        }
+        else{
+            soundPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 1);
+
+            soundTurkeyCry = soundPool.load(this, R.raw.metal_clang2_funny, 1);
+            soundReload = soundPool.load(this, R.raw.reload_again, 1);
+            soundMakeAmerica = soundPool.load(this, R.raw.turkey_gobble, 1);
+            soundGunShot = soundPool.load(this, R.raw.shotgun_sound, 1);
+            soundClick = soundPool.load(this, R.raw.click_on_sound, 1);
+            soundReloadWarning = soundPool.load(this, R.raw.reload_mp3, 1);
+            soundAlive = soundPool.load(this, R.raw.alive2, 1);
+        }
+
+
+
+    }
+
 
 
 
