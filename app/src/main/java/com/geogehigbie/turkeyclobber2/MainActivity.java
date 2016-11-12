@@ -7,12 +7,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -42,17 +41,19 @@ public class MainActivity extends AppCompatActivity  {
 
     private int numberKilled = 0;
 
-    private MediaPlayer mediaPlayerTurkeyCry;
-    private MediaPlayer mediaPlayerReload;
-    private MediaPlayer mediaPlayerGobble;
-    private MediaPlayer mediaPlayerMetalClang;
-    private MediaPlayer mediaPlayerClick;
-    private MediaPlayer mediaPlayerReloadWarning;
-    private MediaPlayer mediaPlayerAlive;
+//    private MediaPlayer mediaPlayerTurkeyCry;
+//    private MediaPlayer mediaPlayerReload;
+//    private MediaPlayer mediaPlayerGobble;
+//    private MediaPlayer mediaPlayerMetalClang;
+//    private MediaPlayer mediaPlayerClick;
+//    private MediaPlayer mediaPlayerReloadWarning;
+//    private MediaPlayer mediaPlayerAlive;
 
-    int soundTurkeyCry;
+    private SoundPool soundPool;
+
+    int soundMetalClang;
     int soundReload;
-    int soundMakeAmerica;
+    int soundGobble;
     int soundGunShot;
     int soundClick;
     int soundReloadWarning;
@@ -70,6 +71,8 @@ public class MainActivity extends AppCompatActivity  {
     public int endCount = 0;
     public int endA = 0; //makes variable accessable to inner class
 
+    private boolean isGameOver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +86,7 @@ public class MainActivity extends AppCompatActivity  {
         alphaAnimation.setFillAfter(true);
         relativeLayoutMain.startAnimation(alphaAnimation);
 
-        defineMediaPlayers(); //defines the sounds to be played during the game
+        defineSoundPool(); //defines the sounds to be played during the game
 
 
     }
@@ -97,14 +100,16 @@ public class MainActivity extends AppCompatActivity  {
         initialAnimation();
         //animateTurkeyHeads();
 
-        mediaPlayerClick.start();
+        //plays clicking sound
+        soundPool.play(soundClick, 1f, 1f, 1, 0, 1);
+        //mediaPlayerClick.start();
 
         cloudMotion();
         // cowMotion();  //this has been removed for now
 
         setClickableArea(); //this is set first so that the number of bullets is displayed properly
 
-        loadBullets();//this makes the bullets visible and sets the touch count to zero
+        loadClubs();//this makes the bullets visible and sets the touch count to zero
 
         loadHighScore();
 
@@ -117,8 +122,9 @@ public class MainActivity extends AppCompatActivity  {
         TurkeyBig turkeyBig1 = new TurkeyBig(turkeybody, 2000, 2000, 0, -2000, 0, 1700, 3000, 0, 0, true);
         turkeyBig1.translateAninimation(turkeybody);
 
-
-        mediaPlayerGobble.start();
+        //plays turkey gobble
+       // mediaPlayerGobble.start();
+        soundPool.play(soundGobble, 1f, 1f, 1, 0, 1);
 
         buttonAnimation(); //the button is set the fade upon game start
 
@@ -128,9 +134,11 @@ public class MainActivity extends AppCompatActivity  {
     //button fades away when pressed
     public void buttonAnimation(){
         final Button button = (Button) findViewById(R.id.start_button);
+        //final ImageView clubDemo = (ImageView) findViewById(R.id.club_demo);
         button.setClickable(false);
         Animation alphaAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.alpha_animation_long);
         button.startAnimation(alphaAnimation);
+        //clubDemo.startAnimation(alphaAnimation);
         alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -140,6 +148,7 @@ public class MainActivity extends AppCompatActivity  {
             @Override
             public void onAnimationEnd(Animation animation) {
                 button.setVisibility(View.GONE);
+                //clubDemo.setVisibility(View.GONE);
                 animateTurkeyHeads();
 
             }
@@ -152,15 +161,15 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     //defines and sets up the media players to be used to play the sound effects
-    public void defineMediaPlayers(){
-        mediaPlayerTurkeyCry = MediaPlayer.create(this, R.raw.metal_clang2_funny);
-        mediaPlayerReload = MediaPlayer.create(this, R.raw.reload_again);
-        mediaPlayerGobble = MediaPlayer.create(this, R.raw.turkey_gobble);
-        mediaPlayerMetalClang = MediaPlayer.create(this, R.raw.alive2);
-        mediaPlayerClick = MediaPlayer.create(this, R.raw.click_on_sound);
-        mediaPlayerReloadWarning = MediaPlayer.create(this, R.raw.reload_mp3);
-        mediaPlayerAlive = MediaPlayer.create(this, R.raw.alive2);
-    }
+//    public void defineMediaPlayers(){
+//        mediaPlayerTurkeyCry = MediaPlayer.create(this, R.raw.metal_clang2_funny);
+//        mediaPlayerReload = MediaPlayer.create(this, R.raw.reload_again);
+//        mediaPlayerGobble = MediaPlayer.create(this, R.raw.turkey_gobble);
+//        mediaPlayerMetalClang = MediaPlayer.create(this, R.raw.alive2);
+//        mediaPlayerClick = MediaPlayer.create(this, R.raw.click_on_sound);
+//        mediaPlayerReloadWarning = MediaPlayer.create(this, R.raw.reload_mp3);
+//        mediaPlayerAlive = MediaPlayer.create(this, R.raw.alive2);
+//    }
 
     public void defineSoundPool(){
 
@@ -175,9 +184,9 @@ public class MainActivity extends AppCompatActivity  {
                     .setAudioAttributes(audioAttributes)
                     .build();
 
-            soundTurkeyCry = soundPool.load(this, R.raw.metal_clang2_funny, 1);
+            soundMetalClang = soundPool.load(this, R.raw.metal_clang2_funny, 1);
             soundReload = soundPool.load(this, R.raw.reload_again, 1);
-            soundMakeAmerica = soundPool.load(this, R.raw.make_america_great_again, 1);
+            soundGobble = soundPool.load(this, R.raw.turkey_gobble, 1);
             soundGunShot = soundPool.load(this, R.raw.shotgun_sound, 1);
             soundClick = soundPool.load(this, R.raw.click_on_sound, 1);
             soundReloadWarning = soundPool.load(this, R.raw.reload_mp3, 1);
@@ -187,9 +196,9 @@ public class MainActivity extends AppCompatActivity  {
         else{
             soundPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 1);
 
-            soundTurkeyCry = soundPool.load(this, R.raw.metal_clang2_funny, 1);
+            soundMetalClang = soundPool.load(this, R.raw.metal_clang2_funny, 1);
             soundReload = soundPool.load(this, R.raw.reload_again, 1);
-            soundMakeAmerica = soundPool.load(this, R.raw.turkey_gobble, 1);
+            soundGobble = soundPool.load(this, R.raw.turkey_gobble, 1);
             soundGunShot = soundPool.load(this, R.raw.shotgun_sound, 1);
             soundClick = soundPool.load(this, R.raw.click_on_sound, 1);
             soundReloadWarning = soundPool.load(this, R.raw.reload_mp3, 1);
@@ -212,14 +221,18 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View v) {
 
                 if(numberOfBullets > 0) {
-                    mediaPlayerMetalClang.start();
+                    //makes a reload warning sound
+                   // mediaPlayerMetalClang.start();
+                    soundPool.play(soundMetalClang, 1f, 1f, 1, 0, 1);
                 }
                 else{
-                    mediaPlayerReloadWarning.start();//makes a reload warning sound
+                    //makes a reload warning sound
+                    //soundPool.play(soundReloadWarning, 1f, 1f, 1, 0, 1);
+                    //mediaPlayerReloadWarning.start();//makes a reload warning sound
                     makeTurkeyNOTShootable();
                 }
 
-                reduceBullets();
+                reduceClubs();
 
                 showMissText();
 
@@ -231,7 +244,7 @@ public class MainActivity extends AppCompatActivity  {
         linearBulletLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reloadBullets();
+                reloadClubs();
             }
         });
 
@@ -240,8 +253,10 @@ public class MainActivity extends AppCompatActivity  {
 
     //makes the bullets visible and loads them for player use this is also called be reloadBullets method
     //ALSO IMPORTANT: MAKES TURKEYS SHOOTABLE via the maketurkeyShootable() method
-    public void loadBullets(){
-        mediaPlayerReload.start(); //makes the gun reload sound
+    public void loadClubs(){
+        //mediaPlayerReload.start(); //makes the gun reload sound
+        //soundPool.play(soundReload, 1f, 1f, 1, 0, 1);
+
         touchCount = 0;
         numberOfBullets = 4;
 
@@ -251,56 +266,56 @@ public class MainActivity extends AppCompatActivity  {
         LinearLayout topLinearLayout = (LinearLayout) findViewById(R.id.reload);
         topLinearLayout.bringToFront();
 
-        ImageView bullet1 = (ImageView) findViewById(R.id.bullet1);
-        ImageView bullet2 = (ImageView) findViewById(R.id.bullet2);
-        ImageView bullet3 = (ImageView) findViewById(R.id.bullet3);
-        ImageView bullet4 = (ImageView) findViewById(R.id.bullet4);
+        ImageView club1 = (ImageView) findViewById(R.id.club1);
+        ImageView club2 = (ImageView) findViewById(R.id.club2);
+        ImageView club3 = (ImageView) findViewById(R.id.club3);
+        ImageView club4 = (ImageView) findViewById(R.id.club4);
 
-        bullet1.setVisibility(View.VISIBLE);
-        bullet2.setVisibility(View.VISIBLE);
-        bullet3.setVisibility(View.VISIBLE);
-        bullet4.setVisibility(View.VISIBLE);
+        club1.setVisibility(View.VISIBLE);
+        club2.setVisibility(View.VISIBLE);
+        club3.setVisibility(View.VISIBLE);
+        club4.setVisibility(View.VISIBLE);
 
     }
 
     //makes the button invisible and resets the number of bullets via the load bullets method
-    public void reloadBullets(){
+    public void reloadClubs(){
 
         //  mediaPlayerReload.start(); //makes the reload sound
 
-        Button reloadNow = (Button) findViewById(R.id.reload_button);
-        reloadNow.setVisibility(View.INVISIBLE);
+        ImageView clubGrab = (ImageView) findViewById(R.id.club_to_get);
+        clubGrab.setVisibility(View.INVISIBLE);
 
-        loadBullets();
+        loadClubs();
 
     }
 
 
     //this method reduces the number of bullets
-    public void reduceBullets(){
+    public void reduceClubs(){
         touchCount++;
         numberOfBullets--;
 
-        ImageView bullet1 = (ImageView) findViewById(R.id.bullet1);
-        ImageView bullet2 = (ImageView) findViewById(R.id.bullet2);
-        ImageView bullet3 = (ImageView) findViewById(R.id.bullet3);
-        ImageView bullet4 = (ImageView) findViewById(R.id.bullet4);
+        ImageView club1 = (ImageView) findViewById(R.id.club1);
+        ImageView club2 = (ImageView) findViewById(R.id.club2);
+        ImageView club3 = (ImageView) findViewById(R.id.club3);
+        ImageView club4 = (ImageView) findViewById(R.id.club4);
 
         switch(touchCount){
             case 1:
-                bullet1.setVisibility(View.INVISIBLE);
+                club1.setVisibility(View.INVISIBLE);
                 numberOfBullets = 3;
                 break;
             case 2:
-                bullet2.setVisibility(View.INVISIBLE);
+                club2.setVisibility(View.INVISIBLE);
                 numberOfBullets = 2;
                 break;
             case 3:
-                bullet3.setVisibility(View.INVISIBLE);
+                club3.setVisibility(View.INVISIBLE);
                 numberOfBullets = 1;
                 break;
             case 4:
-                bullet4.setVisibility(View.INVISIBLE);
+                club4.setVisibility(View.INVISIBLE);
                 reloadNow();
                 numberOfBullets = 0;
                 break;
@@ -313,19 +328,19 @@ public class MainActivity extends AppCompatActivity  {
     //ALSO IMPORTANT: MAKES TURKEYS NOT SHOOTABLE via the maketurkeyNOTShootable() method
     public void reloadNow(){
 
-        final Button reloadNow = (Button) findViewById(R.id.reload_button);
-        reloadNow.setVisibility(View.VISIBLE);
-        reloadNow.bringToFront();
+        final ImageView clubGrab= (ImageView) findViewById(R.id.club_to_get);
+        clubGrab.setVisibility(View.VISIBLE);
+        clubGrab.bringToFront();
 
         makeTurkeyNOTShootable();
 
-        reloadNow.setClickable(true);
-        reloadNow.setOnClickListener(new View.OnClickListener() {
+        clubGrab.setClickable(true);
+        clubGrab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reloadNow.setVisibility(View.INVISIBLE);
+                clubGrab.setVisibility(View.INVISIBLE);
 
-                reloadBullets();
+                reloadClubs();
 
             }
         });
@@ -607,7 +622,7 @@ public class MainActivity extends AppCompatActivity  {
     // a method that does everything that it should when a turkey is shot
     public void turkeyShot(){
         numberKilled++;
-        reduceBullets();
+        reduceClubs();
         points += 10;
 
         Log.i("points", "turkeyShot: called ");
@@ -620,10 +635,11 @@ public class MainActivity extends AppCompatActivity  {
         highScore.setText("High Score " + Integer.toString(highScoreInt));
         highScore.bringToFront();
 
-        mediaPlayerMetalClang.start(); //plays sound of shotgun
-
+        //mediaPlayerMetalClang.start(); //plays sound of shotgun
+        soundPool.play(soundMetalClang, 1f, 1f, 1, 0, 1);
         //plays the cry of the turkeys when they are dispatched
-        mediaPlayerTurkeyCry.start();
+       // mediaPlayerTurkeyCry.start();
+      //  soundPool.play(soundAlive, 1f, 1f, 1, 0, 1);
 
 //        if(numberKilled == 15){
 //            levelUpStart();  //this keeps crashing
@@ -658,7 +674,7 @@ public class MainActivity extends AppCompatActivity  {
 
         if(numberOfBullets > 0) {
             if (insultCount % 3 == 0) {
-                missText.setText("YOU SUCK!");
+                missText.setText("Keep Trying!");
                 missText.setTextSize(75);
                 numberOfMisses++;
             }
@@ -669,7 +685,7 @@ public class MainActivity extends AppCompatActivity  {
             }
         }
         else{
-            missText.setText("Reload!");
+            missText.setText("Tap Club");
             missText.setTextSize(75);
         }
 
@@ -706,7 +722,7 @@ public class MainActivity extends AppCompatActivity  {
 
         //these variables are reset to keep the game playable
         endCount = 0;
-        timer =0;
+        timer = 0;
         numberOfMisses = 0;
         numberKilled = 0;
         level++;
@@ -767,92 +783,97 @@ public class MainActivity extends AppCompatActivity  {
 
     //this ends the game
     public void gameOver() {
-        handler.removeCallbacks(runnable); //stops the handler
+        if (isGameOver != true) {
 
-        mediaPlayerAlive.setLooping(true); //plays the sound that mocks the player
-        mediaPlayerAlive.start();
+            handler.removeCallbacks(runnable); //stops the handler
 
-        makeElementsFadeAndHide();
+            //plays the mocking sound
+            soundPool.play(soundAlive, 1f, 1f, 1, 2, 1);
+            // mediaPlayerAlive.setLooping(true); //plays the sound that mocks the player
+            // mediaPlayerAlive.start();
 
-        // animateTurkeyHeadsWithoutKilling();//this method call animates unclickable turkeys
+
+            makeElementsFadeAndHide();
+
+            // animateTurkeyHeadsWithoutKilling();//this method call animates unclickable turkeys
 
 
+            //puts the game over text on the screen
+            final TextView overText = (TextView) findViewById(R.id.level_text);
+            overText.setText("Game Over");
+            overText.setTextSize(75);
+            overText.setVisibility(View.VISIBLE);
+            if (overText.getAnimation() != null) overText.getAnimation().cancel();
+            overText.bringToFront();
 
-        //puts the game over text on the screen
-        final TextView overText = (TextView) findViewById(R.id.level_text);
-        overText.setText("Game Over");
-        overText.setTextSize(75);
-        overText.setVisibility(View.VISIBLE);
-        if (overText.getAnimation() != null) overText.getAnimation().cancel();
-        overText.bringToFront();
+            overText.animate().setDuration(1000).alpha(1.0f).start();
+            overText.animate().setListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
 
-        overText.animate().setDuration(1000).alpha(1.0f).start();
-        overText.animate().setListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
+                @Override
+                public void onAnimationEnd(Animator animation) {
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
+                    //these two lines clear all animations that happen on the relative layout
+                    RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
+                    relativeLayout.clearAnimation();
 
-                //these two lines clear all animations that happen on the relative layout
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
-                relativeLayout.clearAnimation();
+                }
 
-            }
+                @Override
+                public void onAnimationCancel(Animator animation) {
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
+                }
 
-            }
+                @Override
+                public void onAnimationRepeat(Animator animation) {
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+                }
+            });
 
-            }
-        });
+            //get relative layout and makes it unclickable
+            RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
+            relativeLayout.setClickable(false);
 
-        //get relative layout and makes it unclickable
-        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
-        relativeLayout.setClickable(false);
+            final Button restart = (Button) findViewById(R.id.start_button);
+            restart.setText("Replay");
+            restart.setVisibility(View.VISIBLE);
+            restart.setClickable(true);
+            restart.setOnClickListener(new View.OnClickListener() {
 
-        final Button restart = (Button) findViewById(R.id.start_button);
-        restart.setText("Replay");
-        restart.setVisibility(View.VISIBLE);
-        restart.setClickable(true);
-        restart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //clickToPlay(restart);
+                    //mediaPlayerAlive.stop();
+                    restart.animate().alpha(0).setDuration(1500).start();
+                    restart.setClickable(false);
 
-            @Override
-            public void onClick(View v) {
-                //clickToPlay(restart);
-                mediaPlayerAlive.stop();
-                restart.animate().alpha(0).setDuration(1500).start();
-                restart.setClickable(false);
+                    //this should make the entire layout fade out and after the layout is faded away, the game reloads
+                    RelativeLayout relativeLayoutMain = (RelativeLayout) findViewById(R.id.activity_main);
+                    AlphaAnimation alphaAnimation = new AlphaAnimation(1, 0);
+                    alphaAnimation.setDuration(4000);
+                    alphaAnimation.setFillAfter(true);
+                    relativeLayoutMain.startAnimation(alphaAnimation);
+                    alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
 
-                //this should make the entire layout fade out and after the layout is faded away, the game reloads
-                RelativeLayout relativeLayoutMain = (RelativeLayout) findViewById(R.id.activity_main);
-                AlphaAnimation alphaAnimation = new AlphaAnimation(1, 0);
-                alphaAnimation.setDuration(4000);
-                alphaAnimation.setFillAfter(true);
-                relativeLayoutMain.startAnimation(alphaAnimation);
-                alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
+                        }
 
-                    }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            rebirth(); //this calls the application again, i.e. it restarts the game
+                        }
 
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        rebirth(); //this calls the application again, i.e. it restarts the game
-                    }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
 
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-            }
-        });
+                        }
+                    });
+                }
+            });
+        }
     }
 
 
@@ -863,14 +884,14 @@ public class MainActivity extends AppCompatActivity  {
 
 
         //gathers all the clickable screen elemenst and hides them
-        Button reloadButton = (Button) findViewById(R.id.reload_button);
-        ImageView bullet1 = (ImageView) findViewById(R.id.bullet1);
-        ImageView bullet2 = (ImageView) findViewById(R.id.bullet2);
-        ImageView bullet3 = (ImageView) findViewById(R.id.bullet3);
-        ImageView bullet4 = (ImageView) findViewById(R.id.bullet4);
+        ImageView grabClub = (ImageView) findViewById(R.id.club_to_get);
+        ImageView bullet1 = (ImageView) findViewById(R.id.club1);
+        ImageView bullet2 = (ImageView) findViewById(R.id.club2);
+        ImageView bullet3 = (ImageView) findViewById(R.id.club3);
+        ImageView bullet4 = (ImageView) findViewById(R.id.club3);
         LinearLayout bulletContainer = (LinearLayout) findViewById(R.id.reload);
 
-        View[] stuffToBeInvisible = {reloadButton, bullet1, bullet2, bullet3, bullet4, bulletContainer};
+        View[] stuffToBeInvisible = {grabClub, bullet1, bullet2, bullet3, bullet4, bulletContainer};
 
         for (int a = 0; a < stuffToBeInvisible.length; a++) {
             stuffToBeInvisible[a].animate().alpha(0).setDuration(700).start();
@@ -898,7 +919,7 @@ public class MainActivity extends AppCompatActivity  {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mediaPlayerAlive.stop();
+                    //mediaPlayerAlive.stop();
                     cancelImageAnimation();
 
                 }
@@ -930,19 +951,29 @@ public class MainActivity extends AppCompatActivity  {
 
                 timer++;
 
-                if (numberKilled > 23) {
-                    levelUpStart();
-                }
+                    if (numberKilled > 23) {
+                        levelUpStart();
+                    }
 
-                if (numberOfMisses > 25 || timer > 250){
-                    gameOver();
-                }
 
-                if (endCount >= 4 && numberKilled < 23){
-                    gameOver();
+                    if (numberOfMisses > 23 || timer > 250){
+                        gameOver();
+                        isGameOver = true;
+                        handler.removeCallbacks(runnable);
+                    }
+
+
+
+                    if (endCount >= 4 && numberKilled < 23){
+                        gameOver();
+                        isGameOver = true;
+                        handler.removeCallbacks(runnable);
+
+                    }
+
+                    checkStatus();
+
                 }
-                checkStatus();
-            }
         };
 
         handler.postDelayed(runnable, 100);
@@ -996,7 +1027,6 @@ public class MainActivity extends AppCompatActivity  {
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
         relativeLayout.clearAnimation();
 
-        mediaPlayerAlive.stop();
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
